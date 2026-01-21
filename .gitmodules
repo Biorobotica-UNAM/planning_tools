@@ -1,4 +1,4 @@
 [submodule "clips"]
 	path = clips
 	url = https://github.com/Biorobotica-UNAM/clips.git
-	branch = clips_plan_node
+	branch = main
