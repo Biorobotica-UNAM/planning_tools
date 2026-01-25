@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_srvs REQUIRED)
-find_package(service REQUIRED)
+find_package(clips_interfaces REQUIRED)
 
 
 include_directories(
@@ -24,7 +24,7 @@ add_library(planning_tools SHARED
 ament_target_dependencies(planning_tools
   rclcpp
   std_srvs
-  service
+  clips_interfaces
 )
 
 install(DIRECTORY include/

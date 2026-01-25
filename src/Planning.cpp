@@ -6,7 +6,7 @@ Planning::Planning(const rclcpp::Node::SharedPtr& node)
     : node_(node)
 {
     interpret_client_ =
-        node_->create_client<service::srv::String>(
+        node_->create_client<clips_interfaces::srv::String>(
             "listener/natural_to_clips/interpret");
 
     request_instruction_client_ =
@@ -50,7 +50,7 @@ std::string Planning::interpretToClips(const std::string& sentence)
         return "";
     }
 
-    auto request = std::make_shared<service::srv::String::Request>();
+    auto request = std::make_shared<clips_interfaces::srv::String::Request>();
     request->data = sentence;
 
     auto future = interpret_client_->async_send_request(request);

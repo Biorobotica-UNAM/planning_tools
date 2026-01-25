@@ -10,7 +10,7 @@
 
   <depend>rclcpp</depend>
   <depend>std_srvs</depend>
-  <depend>service</depend>
+  <depend>clips_interfaces</depend>
   
   <export>
     <build_type>ament_cmake</build_type>

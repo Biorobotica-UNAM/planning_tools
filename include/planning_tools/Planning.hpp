@@ -3,7 +3,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_srvs/srv/trigger.hpp>
 
-#include "service/srv/string.hpp"
+#include "clips_interfaces/srv/string.hpp"
 
 #include <string>
 #include <memory>
@@ -28,7 +28,7 @@ private:
 
     rclcpp::Node::SharedPtr node_;
 
-    rclcpp::Client<service::srv::String>::SharedPtr interpret_client_;
+    rclcpp::Client<clips_interfaces::srv::String>::SharedPtr interpret_client_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr request_instruction_client_;
 };
 
