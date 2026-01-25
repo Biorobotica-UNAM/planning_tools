@@ -2,12 +2,12 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <std_srvs/srv/trigger.hpp>
-
 #include "clips_interfaces/srv/string.hpp"
 
 #include <string>
 #include <memory>
 #include <chrono>
+#include <vector>
 
 class Planning
 {
@@ -18,13 +18,14 @@ public:
     std::string interpretToClips(const std::string& sentence);
 
     // Solicita una instrucción (Trigger)
-    bool requestInstruction();
+    std::vector<std::string> requestInstruction();
 
 private:
     bool waitForService(
         const rclcpp::ClientBase::SharedPtr& client,
-        const std::string& service_name,
-        std::chrono::seconds timeout);
+        const std::chrono::seconds& timeout) const;
+
+    std::vector<std::string> tokenize(const std::string& input);
 
     rclcpp::Node::SharedPtr node_;
 
