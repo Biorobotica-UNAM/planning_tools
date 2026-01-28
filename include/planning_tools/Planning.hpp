@@ -20,6 +20,8 @@ public:
     // Solicita una instrucción (Trigger)
     std::vector<std::string> requestInstruction();
 
+    bool startPlanning();
+
 private:
     bool waitForService(
         const rclcpp::ClientBase::SharedPtr& client,
@@ -31,5 +33,6 @@ private:
 
     rclcpp::Client<clips_interfaces::srv::String>::SharedPtr interpret_client_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr request_instruction_client_;
+    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr clips_start_planning_;
 };
 
