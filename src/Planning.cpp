@@ -12,6 +12,10 @@ Planning::Planning(const rclcpp::Node::SharedPtr& node)
     request_instruction_client_ =
         node_->create_client<std_srvs::srv::Trigger>(
             "/request_instruction");
+
+    clips_start_planning_ =
+        node_->create_client<std_srvs::srv::Trigger>(
+            "/clips/start_planning");
 }
 
 bool Planning::waitForService(
@@ -93,4 +97,28 @@ std::vector<std::string> Planning::tokenize(const std::string& input)
     }
 
     return tokens;
+}
+
+bool Planning::startPlanning()
+{
+    if (!waitForService(clips_start_planning_, 5s)) {
+        return false;
+    }
+
+    auto request =
+        std::make_shared<std_srvs::srv::Trigger::Request>();
+
+    auto future =
+        clips_start_planning_->async_send_request(request);
+
+    auto state = rclcpp::spin_until_future_complete(node_, future, 5s);
+
+    if (state != rclcpp::FutureReturnCode::SUCCESS) {
+        RCLCPP_ERROR(node_->get_logger(),
+                     "Clips instruction timeout");
+        return false;
+    }
+
+    auto response = future.get();
+    return response->success;
 }
