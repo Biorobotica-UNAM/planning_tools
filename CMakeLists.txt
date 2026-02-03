@@ -39,5 +39,6 @@ install(TARGETS planning_tools
 
 ament_export_include_directories(include)
 ament_export_libraries(planning_tools)
+ament_export_dependencies(semantic_parser_interfaces)
 
 ament_package()
