@@ -7,6 +7,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(clips_interfaces REQUIRED)
+find_package(semantic_parser_interfaces REQUIRED)
 
 
 include_directories(
@@ -25,6 +26,7 @@ ament_target_dependencies(planning_tools
   rclcpp
   std_srvs
   clips_interfaces
+  semantic_parser_interfaces
 )
 
 install(DIRECTORY include/
