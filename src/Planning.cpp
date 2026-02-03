@@ -14,7 +14,7 @@ Planning::Planning(const rclcpp::Node::SharedPtr &node) : node_(node) {
 
   semantic_parser_client_ =
       node_->create_client<semantic_parser_interfaces::srv::Parser>(
-          '/semantic_parser/semantic_parser');
+          "/semantic_parser/semantic_parser");
 }
 
 bool Planning::waitForService(const rclcpp::ClientBase::SharedPtr &client,
