@@ -6,10 +6,13 @@ Planning::Planning(const rclcpp::Node::SharedPtr &node) : node_(node) {
   interpret_client_ = node_->create_client<clips_interfaces::srv::String>(
       "/hri/listener/natural_to_clips/interpret");
 
+  primitive_client_ = node_->create_client<clips_interfaces::srv::String>(
+      "primitive_to_clips/convert");
+
   request_instruction_client_ =
       node_->create_client<std_srvs::srv::Trigger>("/request_instruction");
 
-  clips_start_planning_ =
+  clips_start_planning_client_ =
       node_->create_client<std_srvs::srv::Trigger>("/clips/start_planning");
 
   semantic_parser_client_ =
@@ -31,6 +34,27 @@ std::string Planning::interpretToClips(const std::string &sentence) {
   request->data = sentence;
 
   auto future = interpret_client_->async_send_request(request);
+
+  auto state = rclcpp::spin_until_future_complete(node_, future, 5s);
+
+  if (state != rclcpp::FutureReturnCode::SUCCESS) {
+    RCLCPP_ERROR(node_->get_logger(), "Timeout calling interpret service");
+    return "";
+  }
+
+  auto response = future.get();
+  return response->data;
+}
+
+std::string Planning::primitiveToClips(const std::string &sentence) {
+  if (!waitForService(primitive_client_, 5s)) {
+    return "";
+  }
+
+  auto request = std::make_shared<clips_interfaces::srv::String::Request>();
+  request->data = sentence;
+
+  auto future = primitive_client_->async_send_request(request);
 
   auto state = rclcpp::spin_until_future_complete(node_, future, 5s);
 
@@ -88,13 +112,13 @@ std::vector<std::string> Planning::tokenize(const std::string &input) {
 }
 
 bool Planning::startPlanning() {
-  if (!waitForService(clips_start_planning_, 5s)) {
+  if (!waitForService(clips_start_planning_client_, 5s)) {
     return false;
   }
 
   auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 
-  auto future = clips_start_planning_->async_send_request(request);
+  auto future = clips_start_planning_client_->async_send_request(request);
 
   auto state = rclcpp::spin_until_future_complete(node_, future, 5s);
 

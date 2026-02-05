@@ -1,7 +1,7 @@
 <launch>
 
     <group>
-        <push_ros_namespace namespace="clips"/>
+        <push_ros_namespace namespace="planning"/>
 
         <!-- CLIPS -->
         <include file="$(find-pkg-share clips_launch)/launch/clips.launch.xml"/>
