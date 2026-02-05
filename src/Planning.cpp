@@ -7,17 +7,17 @@ Planning::Planning(const rclcpp::Node::SharedPtr &node) : node_(node) {
       "/hri/listener/natural_to_clips/interpret");
 
   primitive_client_ = node_->create_client<clips_interfaces::srv::String>(
-      "primitive_to_clips/convert");
+      "/planning/primitive_to_clips/convert");
 
   request_instruction_client_ =
-      node_->create_client<std_srvs::srv::Trigger>("/request_instruction");
+      node_->create_client<std_srvs::srv::Trigger>("/planning/request_instruction");
 
   clips_start_planning_client_ =
-      node_->create_client<std_srvs::srv::Trigger>("/clips/start_planning");
+      node_->create_client<std_srvs::srv::Trigger>("/planning/clips/start_planning");
 
   semantic_parser_client_ =
       node_->create_client<semantic_parser_interfaces::srv::Parser>(
-          "/semantic_parser/semantic_parser");
+          "/planning/semantic_parser/semantic_parser");
 }
 
 bool Planning::waitForService(const rclcpp::ClientBase::SharedPtr &client,
