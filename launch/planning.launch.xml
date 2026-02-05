@@ -6,6 +6,9 @@
         <!-- CLIPS -->
         <include file="$(find-pkg-share clips_launch)/launch/clips.launch.xml"/>
 
+        <!-- Semantic Parser -->
+        <include file="$(find-pkg-share semantic_parser)/launch/semantic.launch.xml"/>
+
     </group>
 
 </launch>
