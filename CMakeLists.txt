@@ -14,8 +14,6 @@ include_directories(
   include
   ${rclcpp_INCLUDE_DIRS}
   ${std_msgs_INCLUDE_DIRS}
-#  ${geometry_msgs_INCLUDE_DIRS}
-#  ${robotino_msgs_INCLUDE_DIRS}
 )
 
 add_library(planning_tools SHARED
@@ -35,6 +33,11 @@ install(DIRECTORY include/
 
 install(TARGETS planning_tools
   DESTINATION lib
+)
+
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_export_include_directories(include)
