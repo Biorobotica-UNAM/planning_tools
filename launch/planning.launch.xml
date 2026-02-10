@@ -4,7 +4,7 @@
         <push_ros_namespace namespace="planning"/>
 
         <!-- CLIPS -->
-        <include file="$(find-pkg-share clips_launch)/launch/clips_launch.launch.xml"/>
+        <include file="$(find-pkg-share clips_launch)/launch/clips.launch.xml"/>
 
         <!-- Semantic parser -->
         <include file="$(find-pkg-share semantic_parser)/launch/semantic_parser.launch.xml"/>
