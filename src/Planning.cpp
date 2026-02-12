@@ -131,7 +131,29 @@ bool Planning::startPlanning() {
   return response->success;
 }
 
-std::string Planning::parseSemanticCommand(const std::string &command) {
+std::string Planning::parseSemanticCommand(const std::string &input) {
+
+  std::string command = input;
+
+  // Verificar si el input es un archivo existente
+  if (std::filesystem::exists(input) && 
+      std::filesystem::is_regular_file(input) &&
+      input.size() >= 4 &&
+      input.substr(input.size() - 4) == ".txt") {
+
+    std::ifstream file(input);
+    if (!file.is_open()) {
+      RCLCPP_ERROR(node_->get_logger(), "Could not open file: %s", input.c_str());
+      return "";
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    command = buffer.str();
+
+    RCLCPP_INFO(node_->get_logger(), "Loaded command from file: %s", input.c_str());
+  }
+
   if (!waitForService(semantic_parser_client_, 5s)) {
     RCLCPP_ERROR(node_->get_logger(), "semantic_parser service not available");
     return "";
@@ -163,3 +185,4 @@ std::string Planning::parseSemanticCommand(const std::string &command) {
 
   return response->response;
 }
+
