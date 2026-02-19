@@ -3,6 +3,7 @@
 #include "clips_interfaces/srv/string.hpp"
 #include "semantic_parser_interfaces/srv/parser.hpp"
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/callback_group.hpp>
 #include <std_srvs/srv/trigger.hpp>
 
 #include <chrono>
@@ -15,7 +16,7 @@
 
 class Planning {
 public:
-  Planning(const rclcpp::Node::SharedPtr &node);
+  explicit Planning(const rclcpp::Node::SharedPtr &node);
 
   std::string interpretToClips(const std::string &sentence);
   std::string primitiveToClips(const std::string &sentence);
@@ -32,11 +33,13 @@ private:
 
   rclcpp::Node::SharedPtr node_;
 
+  // ✅ Clients in a Reentrant callback group to avoid deadlocks when called from timer callbacks
+  rclcpp::CallbackGroup::SharedPtr cb_group_clients_;
+
   rclcpp::Client<clips_interfaces::srv::String>::SharedPtr interpret_client_;
   rclcpp::Client<clips_interfaces::srv::String>::SharedPtr primitive_client_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr request_instruction_client_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr clips_start_planning_client_;
 
-  rclcpp::Client<semantic_parser_interfaces::srv::Parser>::SharedPtr
-      semantic_parser_client_;
+  rclcpp::Client<semantic_parser_interfaces::srv::Parser>::SharedPtr semantic_parser_client_;
 };
