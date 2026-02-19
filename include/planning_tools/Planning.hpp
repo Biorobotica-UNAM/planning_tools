@@ -4,6 +4,8 @@
 #include "semantic_parser_interfaces/srv/parser.hpp"
 #include <rclcpp/rclcpp.hpp>
 #include <std_srvs/srv/trigger.hpp>
+#include <mutex>
+#include <condition_variable>
 
 #include <chrono>
 #include <memory>
