@@ -33,18 +33,29 @@ std::string Planning::interpretToClips(const std::string &sentence) {
   auto request = std::make_shared<clips_interfaces::srv::String::Request>();
   request->data = sentence;
 
-  auto future = interpret_client_->async_send_request(request);
+  std::mutex mtx;
+  std::condition_variable cv;
+  bool done = false;
+  std::string result;
 
-  auto state = rclcpp::spin_until_future_complete(node_, future, 5s);
+  auto callback =
+      [&](rclcpp::Client<clips_interfaces::srv::String>::SharedFuture future) {
+        result = future.get()->data;
+        done = true;
+        cv.notify_one();
+      };
 
-  if (state != rclcpp::FutureReturnCode::SUCCESS) {
+  interpret_client_->async_send_request(request, callback);
+
+  std::unique_lock<std::mutex> lock(mtx);
+  if (!cv.wait_for(lock, 5s, [&] { return done; })) {
     RCLCPP_ERROR(node_->get_logger(), "Timeout calling interpret service");
     return "";
   }
 
-  auto response = future.get();
-  return response->data;
+  return result;
 }
+
 
 std::string Planning::primitiveToClips(const std::string &sentence) {
   if (!waitForService(primitive_client_, 5s)) {
@@ -54,18 +65,29 @@ std::string Planning::primitiveToClips(const std::string &sentence) {
   auto request = std::make_shared<clips_interfaces::srv::String::Request>();
   request->data = sentence;
 
-  auto future = primitive_client_->async_send_request(request);
+  std::mutex mtx;
+  std::condition_variable cv;
+  bool done = false;
+  std::string result;
 
-  auto state = rclcpp::spin_until_future_complete(node_, future, 5s);
+  auto callback =
+      [&](rclcpp::Client<clips_interfaces::srv::String>::SharedFuture future) {
+        result = future.get()->data;
+        done = true;
+        cv.notify_one();
+      };
 
-  if (state != rclcpp::FutureReturnCode::SUCCESS) {
-    RCLCPP_ERROR(node_->get_logger(), "Timeout calling interpret service");
+  primitive_client_->async_send_request(request, callback);
+
+  std::unique_lock<std::mutex> lock(mtx);
+  if (!cv.wait_for(lock, 5s, [&] { return done; })) {
+    RCLCPP_ERROR(node_->get_logger(), "Timeout calling primitive service");
     return "";
   }
 
-  auto response = future.get();
-  return response->data;
+  return result;
 }
+
 
 std::vector<std::string> Planning::requestInstruction() {
   if (!waitForService(request_instruction_client_, 5s)) {
@@ -75,22 +97,35 @@ std::vector<std::string> Planning::requestInstruction() {
   auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 
   while (rclcpp::ok()) {
-    auto future = request_instruction_client_->async_send_request(request);
 
-    auto state = rclcpp::spin_until_future_complete(node_, future, 5s);
+    std::mutex mtx;
+    std::condition_variable cv;
+    bool done = false;
+    bool success = false;
+    std::string message;
 
-    if (state != rclcpp::FutureReturnCode::SUCCESS) {
+    auto callback =
+        [&](rclcpp::Client<std_srvs::srv::Trigger>::SharedFuture future) {
+          auto response = future.get();
+          success = response->success;
+          message = response->message;
+          done = true;
+          cv.notify_one();
+        };
+
+    request_instruction_client_->async_send_request(request, callback);
+
+    std::unique_lock<std::mutex> lock(mtx);
+    if (!cv.wait_for(lock, 5s, [&] { return done; })) {
       RCLCPP_WARN(node_->get_logger(), "Waiting for instruction...");
       rclcpp::sleep_for(300ms);
       continue;
     }
 
-    auto response = future.get();
-
-    if (response->success && !response->message.empty()) {
+    if (success && !message.empty()) {
       RCLCPP_INFO(node_->get_logger(), "Instruction received: %s",
-                  response->message.c_str());
-      return tokenize(response->message);
+                  message.c_str());
+      return tokenize(message);
     }
 
     rclcpp::sleep_for(300ms);
@@ -98,6 +133,7 @@ std::vector<std::string> Planning::requestInstruction() {
 
   return {};
 }
+
 
 std::vector<std::string> Planning::tokenize(const std::string &input) {
   std::vector<std::string> tokens;
@@ -118,71 +154,62 @@ bool Planning::startPlanning() {
 
   auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 
-  auto future = clips_start_planning_client_->async_send_request(request);
+  std::mutex mtx;
+  std::condition_variable cv;
+  bool done = false;
+  bool success = false;
 
-  auto state = rclcpp::spin_until_future_complete(node_, future, 5s);
+  auto callback =
+      [&](rclcpp::Client<std_srvs::srv::Trigger>::SharedFuture future) {
+        success = future.get()->success;
+        done = true;
+        cv.notify_one();
+      };
 
-  if (state != rclcpp::FutureReturnCode::SUCCESS) {
-    RCLCPP_ERROR(node_->get_logger(), "Clips instruction timeout");
+  clips_start_planning_client_->async_send_request(request, callback);
+
+  std::unique_lock<std::mutex> lock(mtx);
+  if (!cv.wait_for(lock, 5s, [&] { return done; })) {
+    RCLCPP_ERROR(node_->get_logger(), "Clips start planning timeout");
     return false;
   }
 
-  auto response = future.get();
-  return response->success;
+  return success;
 }
 
-std::string Planning::parseSemanticCommand(const std::string &input) {
-
-  std::string command = input;
-
-  // Verificar si el input es un archivo existente
-  if (std::filesystem::exists(input) && 
-      std::filesystem::is_regular_file(input) &&
-      input.size() >= 4 &&
-      input.substr(input.size() - 4) == ".txt") {
-
-    std::ifstream file(input);
-    if (!file.is_open()) {
-      RCLCPP_ERROR(node_->get_logger(), "Could not open file: %s", input.c_str());
-      return "";
-    }
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    command = buffer.str();
-
-    RCLCPP_INFO(node_->get_logger(), "Loaded command from file: %s", input.c_str());
-  }
-
+std::string Planning::parseSemanticCommand(const std::string &command) {
   if (!waitForService(semantic_parser_client_, 5s)) {
-    RCLCPP_ERROR(node_->get_logger(), "semantic_parser service not available");
+    RCLCPP_ERROR(node_->get_logger(), 
+                 "semantic_parser service not available");
     return "";
   }
 
   auto request =
       std::make_shared<semantic_parser_interfaces::srv::Parser::Request>();
-
   request->command = command;
 
-  auto future = semantic_parser_client_->async_send_request(request);
+  std::mutex mtx;
+  std::condition_variable cv;
+  bool done = false;
+  std::string result;
 
-  auto state = rclcpp::spin_until_future_complete(node_, future, 10s);
+  auto callback =
+      [&](rclcpp::Client<
+          semantic_parser_interfaces::srv::Parser>::SharedFuture future) {
+        auto response = future.get();
+        result = response->response;   // usa el campo correcto de tu srv
+        done = true;
+        cv.notify_one();
+      };
 
-  if (state != rclcpp::FutureReturnCode::SUCCESS) {
+  semantic_parser_client_->async_send_request(request, callback);
+
+  std::unique_lock<std::mutex> lock(mtx);
+  if (!cv.wait_for(lock, 5s, [&] { return done; })) {
     RCLCPP_ERROR(node_->get_logger(),
                  "Timeout calling semantic_parser service");
     return "";
   }
 
-  auto response = future.get();
-
-  if (response->response.empty()) {
-    RCLCPP_WARN(node_->get_logger(), "semantic_parser returned empty response");
-  } else {
-    RCLCPP_INFO(node_->get_logger(), "Semantic CD: %s",
-                response->response.c_str());
-  }
-
-  return response->response;
+  return result;
 }
-
