@@ -185,7 +185,6 @@ std::string Planning::parseSemanticCommand(const std::string &input)
 
   auto future = semantic_parser_client_->async_send_request(request);
 
-  // ✅ No spinning here. Let the MultiThreadedExecutor process responses.
   if (future.wait_for(10s) != std::future_status::ready) {
     RCLCPP_ERROR(node_->get_logger(), "Timeout calling semantic_parser service");
     return "";
