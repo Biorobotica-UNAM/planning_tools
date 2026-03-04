@@ -33,7 +33,6 @@ private:
 
   rclcpp::Node::SharedPtr node_;
 
-  // ✅ Clients in a Reentrant callback group to avoid deadlocks when called from timer callbacks
   rclcpp::CallbackGroup::SharedPtr cb_group_clients_;
 
   rclcpp::Client<clips_interfaces::srv::String>::SharedPtr interpret_client_;
