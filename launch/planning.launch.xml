@@ -1,14 +1,18 @@
 <launch>
-
+    <!-- 1. Declarar el argumento que esperamos recibir -->
+    <arg name="plan_name" default="default_plan"/>
+    
     <group>
         <push_ros_namespace namespace="planning"/>
 
-        <!-- CLIPS -->
-        <include file="$(find-pkg-share clips_launch)/launch/clips.launch.xml"/>
+        <!-- 2. Incluir el launch de CLIPS y pasarle el argumento -->
+        <include file="$(find-pkg-share clips_launch)/launch/clips.launch.xml">
+            <!-- Esta es la línea clave: propaga el argumento hacia abajo -->
+            <arg name="plan_name" value="$(var plan_name)"/>
+        </include>
 
         <!-- Semantic parser -->
         <include file="$(find-pkg-share semantic_parser)/launch/semantic_parser.launch.xml"/>
 
     </group>
-
 </launch>
