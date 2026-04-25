@@ -12,7 +12,7 @@
         </include>
 
         <!-- Semantic parser -->
-        <!-- <include file="$(find-pkg-share semantic_parser)/launch/semantic_parser.launch.xml"/> -->
+        <include file="$(find-pkg-share semantic_parser)/launch/semantic_parser.launch.xml"/>
 
     </group>
 </launch>
