@@ -36,6 +36,7 @@
 #include <vector>
 
 #include "clips_interfaces/srv/string.hpp"
+#include "semantic_parser_interfaces/srv/extract_entity.hpp"
 #include "semantic_parser_interfaces/srv/parser.hpp"
 #include <rclcpp/callback_group.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -64,6 +65,18 @@ public:
    */
   std::string primitiveToClips(const std::string &sentence,
                                std::chrono::seconds timeout = 5s);
+
+  /**
+   * Extract a sustantive from a desired category.
+   * @param sentence  Natural language sentence.
+   * @param category  The category of the object which is meant to be saved.
+   * @param timeout   Maximum time to wait for the service (default: 5 s).
+   * @return std::string Only the name of the sustantive of the desired
+   * category.
+   */
+  std::string extractEntity(const std::string &sentence,
+                            const std::string &category,
+                            std::chrono::seconds timeout = 5s);
 
   /**
    * Poll the instruction service until a valid instruction is received.
@@ -98,6 +111,8 @@ private:
 
   rclcpp::Client<clips_interfaces::srv::String>::SharedPtr interpret_client_;
   rclcpp::Client<clips_interfaces::srv::String>::SharedPtr primitive_client_;
+  rclcpp::Client<semantic_parser_interfaces::srv::ExtractEntity>::SharedPtr
+      entity_client_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr request_instruction_client_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr
       clips_start_planning_client_;
