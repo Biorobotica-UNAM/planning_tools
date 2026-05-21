@@ -95,25 +95,23 @@ std::string Planning::primitiveToClips(const std::string &sentence,
 std::string Planning::extractEntity(const std::string &sentence,
                                     const std::string &category,
                                     std::chrono::seconds timeout) {
+
   auto request = std::make_shared<
       semantic_parser_interfaces::srv::ExtractEntity::Request>();
 
   request->sentence = sentence;
+  request->category = category;
 
   std::string result;
 
   bool completed = call_service<semantic_parser_interfaces::srv::ExtractEntity>(
       entity_client_, request,
       [&](auto response) {
-        if (category == "name") {
-          result = response->name;
-
-        } else if (category == "drink") {
-          result = response->drink;
-
-        } else {
-          RCLCPP_WARN(node_->get_logger(), "Unknown extractEntity category: %s",
-                      category.c_str());
+        // Nueva versión compatible con value y values
+        if (!response->value.empty()) {
+          result = response->value;
+        } else if (!response->values.empty()) {
+          result = response->values.front();
         }
       },
       timeout, "ExtractEntity");
