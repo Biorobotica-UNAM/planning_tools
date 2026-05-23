@@ -41,8 +41,6 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
-ament_export_targets(planning_tools_targets HAS_LIBRARY_TARGET)
-
 ament_export_dependencies(
   rclcpp
   std_srvs
