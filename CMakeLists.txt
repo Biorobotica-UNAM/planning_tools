@@ -9,11 +9,9 @@ find_package(std_srvs REQUIRED)
 find_package(clips_interfaces REQUIRED)
 find_package(semantic_parser_interfaces REQUIRED)
 
-
 include_directories(
   include
   ${rclcpp_INCLUDE_DIRS}
-  ${std_msgs_INCLUDE_DIRS}
 )
 
 add_library(planning_tools SHARED
@@ -27,11 +25,14 @@ ament_target_dependencies(planning_tools
   semantic_parser_interfaces
 )
 
-install(DIRECTORY include/
+install(
+  DIRECTORY include/
   DESTINATION include
 )
 
-install(TARGETS planning_tools
+install(
+  TARGETS planning_tools
+  EXPORT planning_tools_targets
   DESTINATION lib
 )
 
@@ -40,8 +41,16 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+ament_export_targets(planning_tools_targets HAS_LIBRARY_TARGET)
+
+ament_export_dependencies(
+  rclcpp
+  std_srvs
+  clips_interfaces
+  semantic_parser_interfaces
+)
+
 ament_export_include_directories(include)
 ament_export_libraries(planning_tools)
-ament_export_dependencies(semantic_parser_interfaces)
 
 ament_package()
