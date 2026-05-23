@@ -32,7 +32,6 @@ install(
 
 install(
   TARGETS planning_tools
-  EXPORT planning_tools_targets
   DESTINATION lib
 )
 
