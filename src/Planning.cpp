@@ -15,6 +15,9 @@
  */
 
 #include "planning_tools/Planning.hpp"
+#include "semantic_parser_interfaces/srv/extract_entity.hpp"
+#include <chrono>
+#include <memory>
 
 // ============================================================
 // Constructor
@@ -31,6 +34,10 @@ Planning::Planning(const rclcpp::Node::SharedPtr &node) : node_(node) {
 
   primitive_client_ = node_->create_client<clips_interfaces::srv::String>(
       "/planning/primitive_to_clips/convert", qos, cb_group_clients_);
+
+  entity_client_ =
+      node->create_client<semantic_parser_interfaces::srv::ExtractEntity>(
+          "/planning/semantic_parser/extract_entity", qos, cb_group_clients_);
 
   request_instruction_client_ = node_->create_client<std_srvs::srv::Trigger>(
       "/planning/request_instruction", qos, cb_group_clients_);
@@ -77,6 +84,47 @@ std::string Planning::primitiveToClips(const std::string &sentence,
       primitive_client_, request,
       [&](auto response) { result = response->data; }, timeout,
       "PrimitiveToClips");
+
+  return result;
+}
+
+// ============================================================
+// extractEntity
+// ============================================================
+
+std::string Planning::extractEntity(const std::string &sentence,
+                                    const std::string &category,
+                                    std::chrono::seconds timeout) {
+
+  auto request = std::make_shared<
+      semantic_parser_interfaces::srv::ExtractEntity::Request>();
+
+  request->sentence = sentence;
+  request->category = category;
+
+  std::string result;
+
+  bool completed = call_service<semantic_parser_interfaces::srv::ExtractEntity>(
+      entity_client_, request,
+      [&](auto response) {
+        // Nueva versión compatible con value y values
+        if (!response->value.empty()) {
+          result = response->value;
+        } else if (!response->values.empty()) {
+          result = response->values.front();
+        }
+      },
+      timeout, "ExtractEntity");
+
+  if (!completed) {
+    return "";
+  }
+
+  if (result.empty()) {
+    RCLCPP_WARN(node_->get_logger(),
+                "ExtractEntity returned empty result for category '%s'.",
+                category.c_str());
+  }
 
   return result;
 }
