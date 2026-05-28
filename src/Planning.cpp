@@ -18,6 +18,7 @@
 #include "semantic_parser_interfaces/srv/extract_entity.hpp"
 #include <chrono>
 #include <memory>
+#include <vector>
 
 // ============================================================
 // Constructor
@@ -27,8 +28,9 @@ Planning::Planning(const rclcpp::Node::SharedPtr &node) : node_(node) {
   cb_group_clients_ =
       node_->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
-  // Guys, please. Make sure the code compiles with ROS 2 Humble too. We talked about this!!!
-  //const rclcpp::QoS qos = rclcpp::ServicesQoS();
+  // Guys, please. Make sure the code compiles with ROS 2 Humble too. We talked
+  // about this!!!
+  // const rclcpp::QoS qos = rclcpp::ServicesQoS();
   const rmw_qos_profile_t qos = rmw_qos_profile_services_default;
 
   interpret_client_ = node_->create_client<clips_interfaces::srv::String>(
@@ -94,9 +96,9 @@ std::string Planning::primitiveToClips(const std::string &sentence,
 // extractEntity
 // ============================================================
 
-std::string Planning::extractEntity(const std::string &sentence,
-                                    const std::string &category,
-                                    std::chrono::seconds timeout) {
+std::vector<std::string> Planning::extractEntity(const std::string &sentence,
+                                                 const std::string &category,
+                                                 std::chrono::seconds timeout) {
 
   auto request = std::make_shared<
       semantic_parser_interfaces::srv::ExtractEntity::Request>();
@@ -104,24 +106,22 @@ std::string Planning::extractEntity(const std::string &sentence,
   request->sentence = sentence;
   request->category = category;
 
-  std::string result;
+  std::vector<std::string> result;
 
   bool completed = call_service<semantic_parser_interfaces::srv::ExtractEntity>(
       entity_client_, request,
       [&](auto response) {
-        // Nueva versión compatible con value y values
         if (!response->value.empty()) {
-          result = response->value;
+          result = {response->value};
         } else if (!response->values.empty()) {
-          result = response->values.front();
+          result = response->values;
         }
       },
       timeout, "ExtractEntity");
 
   if (!completed) {
-    return "";
+    return {};
   }
-
   if (result.empty()) {
     RCLCPP_WARN(node_->get_logger(),
                 "ExtractEntity returned empty result for category '%s'.",

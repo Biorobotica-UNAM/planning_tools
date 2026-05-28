@@ -74,9 +74,9 @@ public:
    * @return std::string Only the name of the sustantive of the desired
    * category.
    */
-  std::string extractEntity(const std::string &sentence,
-                            const std::string &category,
-                            std::chrono::seconds timeout = 5s);
+  std::vector<std::string> extractEntity(const std::string &sentence,
+                                         const std::string &category,
+                                         std::chrono::seconds timeout = 5s);
 
   /**
    * Poll the instruction service until a valid instruction is received.
