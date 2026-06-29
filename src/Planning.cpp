@@ -39,6 +39,9 @@ Planning::Planning(const rclcpp::Node::SharedPtr &node) : node_(node) {
   primitive_client_ = node_->create_client<clips_interfaces::srv::String>(
       "/planning/primitive_to_clips/convert", qos, cb_group_clients_);
 
+  goals_client_ = node_->create_client<clips_interfaces::srv::String>(
+      "/planning/goals_to_clips/convert", qos, cb_group_clients_);
+
   entity_client_ =
       node->create_client<semantic_parser_interfaces::srv::ExtractEntity>(
           "/planning/semantic_parser/extract_entity", qos, cb_group_clients_);
@@ -88,6 +91,25 @@ std::string Planning::primitiveToClips(const std::string &sentence,
       primitive_client_, request,
       [&](auto response) { result = response->data; }, timeout,
       "PrimitiveToClips");
+
+  return result;
+}
+
+// ============================================================
+// goalsToClips
+// ============================================================
+
+std::string Planning::goalsToClips(const std::string &goals_json,
+                                   std::chrono::seconds timeout) {
+  auto request = std::make_shared<clips_interfaces::srv::String::Request>();
+  request->data = goals_json;
+
+  std::string result;
+
+  call_service<clips_interfaces::srv::String>(
+      goals_client_, request,
+      [&](auto response) { result = response->data; }, timeout,
+      "GoalsToClips");
 
   return result;
 }

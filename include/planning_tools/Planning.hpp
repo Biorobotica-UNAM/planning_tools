@@ -67,6 +67,16 @@ public:
                                std::chrono::seconds timeout = 5s);
 
   /**
+   * Convert a Qwen goals JSON payload through goals_to_clips.
+   * The service asserts the generated facts and starts planning.
+   * @param goals_json  JSON with {"input": string, "goals": [goal strings]}.
+   * @param timeout     Maximum time to wait for the service (default: 5 s).
+   * @return Service response, usually "OK", or empty string on failure.
+   */
+  std::string goalsToClips(const std::string &goals_json,
+                           std::chrono::seconds timeout = 5s);
+
+  /**
    * Extract a sustantive from a desired category.
    * @param sentence  Natural language sentence.
    * @param category  The category of the object which is meant to be saved.
@@ -111,6 +121,7 @@ private:
 
   rclcpp::Client<clips_interfaces::srv::String>::SharedPtr interpret_client_;
   rclcpp::Client<clips_interfaces::srv::String>::SharedPtr primitive_client_;
+  rclcpp::Client<clips_interfaces::srv::String>::SharedPtr goals_client_;
   rclcpp::Client<semantic_parser_interfaces::srv::ExtractEntity>::SharedPtr
       entity_client_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr request_instruction_client_;

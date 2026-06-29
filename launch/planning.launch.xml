@@ -1,12 +1,13 @@
 <launch>
     <!-- 1. Declarar el argumento que esperamos recibir -->
     <arg name="plan_name" default="default_plan"/>
-    <arg name="use_semantic_compare" default="false"/>
-    <arg name="semantic_return_backend" default="best"/>
-    <arg name="qwen_url" default="http://127.0.0.1:8008"/>
+    <arg name="qwen_url" default=""/>
     <arg name="qwen_api_key" default=""/>
-    <arg name="qwen_timeout_sec" default="15.0"/>
-    <arg name="use_goals_to_clips" default="false"/>
+    <arg name="qwen_timeout_sec" default="5.0"/>
+    <arg name="qwen_response_format" default="goals"/>
+    <arg name="use_entity_extractor" default="false"/>
+    <arg name="use_goals_to_clips" default="true"/>
+    <arg name="clips_output" default="log"/>
     
     <group>
         <push_ros_namespace namespace="planning"/>
@@ -16,15 +17,16 @@
             <!-- Esta es la línea clave: propaga el argumento hacia abajo -->
             <arg name="plan_name" value="$(var plan_name)"/>
             <arg name="use_goals_to_clips" value="$(var use_goals_to_clips)"/>
+            <arg name="clips_output" value="$(var clips_output)"/>
         </include>
 
         <!-- Semantic parser -->
         <include file="$(find-pkg-share semantic_parser)/launch/semantic_parser.launch.xml">
-            <arg name="use_semantic_compare" value="$(var use_semantic_compare)"/>
-            <arg name="semantic_return_backend" value="$(var semantic_return_backend)"/>
             <arg name="qwen_url" value="$(var qwen_url)"/>
             <arg name="qwen_api_key" value="$(var qwen_api_key)"/>
             <arg name="qwen_timeout_sec" value="$(var qwen_timeout_sec)"/>
+            <arg name="qwen_response_format" value="$(var qwen_response_format)"/>
+            <arg name="use_entity_extractor" value="$(var use_entity_extractor)"/>
         </include>
 
     </group>
