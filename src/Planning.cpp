@@ -55,6 +55,9 @@ Planning::Planning(const rclcpp::Node::SharedPtr &node) : node_(node) {
   semantic_parser_client_ =
       node_->create_client<semantic_parser_interfaces::srv::Parser>(
           "/planning/semantic_parser/semantic_parser", qos, cb_group_clients_);
+  gpsr_listen_client_ =
+      node_->create_client<semantic_parser_interfaces::srv::Parser>(
+          "/planning/semantic_parser/listen_gpsr", qos, cb_group_clients_);
 }
 
 // ============================================================
@@ -235,6 +238,35 @@ std::string Planning::parseSemanticCommand(const std::string &input,
     RCLCPP_WARN(node_->get_logger(), "SemanticParser returned empty response.");
   } else {
     RCLCPP_INFO(node_->get_logger(), "Semantic CD: %s", result.c_str());
+  }
+
+  return result;
+}
+
+// ============================================================
+// listenGpsrCommand
+// ============================================================
+
+std::string Planning::listenGpsrCommand(std::chrono::seconds timeout) {
+  auto request =
+      std::make_shared<semantic_parser_interfaces::srv::Parser::Request>();
+  request->command = "";
+
+  std::string result;
+
+  bool completed = call_service<semantic_parser_interfaces::srv::Parser>(
+      gpsr_listen_client_, request,
+      [&](auto response) { result = response->response; }, timeout,
+      "GpsrListen");
+
+  if (!completed) {
+    return "";
+  }
+
+  if (result.empty()) {
+    RCLCPP_WARN(node_->get_logger(), "GpsrListen returned empty response.");
+  } else {
+    RCLCPP_INFO(node_->get_logger(), "GpsrListen response: %s", result.c_str());
   }
 
   return result;

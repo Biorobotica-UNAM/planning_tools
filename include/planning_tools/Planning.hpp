@@ -114,6 +114,13 @@ public:
   std::string parseSemanticCommand(const std::string &input,
                                    std::chrono::seconds timeout = 10s);
 
+  /**
+   * Ask the Qwen GPSR service to listen to one command and return a goals JSON.
+   * @param timeout  Maximum time to wait for listener + Qwen (default: 45 s).
+   * @return JSON with {"input": string, "goals": [...]}, or an aborted JSON.
+   */
+  std::string listenGpsrCommand(std::chrono::seconds timeout = 45s);
+
 private:
   // ── ROS2 infrastructure ───────────────────────────────────────────────────
   rclcpp::Node::SharedPtr node_;
@@ -129,6 +136,8 @@ private:
       clips_start_planning_client_;
   rclcpp::Client<semantic_parser_interfaces::srv::Parser>::SharedPtr
       semantic_parser_client_;
+  rclcpp::Client<semantic_parser_interfaces::srv::Parser>::SharedPtr
+      gpsr_listen_client_;
 
   // ── Template Method: invariant call flow ──────────────────────────────────
 
