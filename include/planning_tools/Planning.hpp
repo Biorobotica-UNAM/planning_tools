@@ -67,6 +67,16 @@ public:
                                std::chrono::seconds timeout = 5s);
 
   /**
+   * Convert a Qwen goals JSON payload through goals_to_clips.
+   * The service asserts the generated facts and starts planning.
+   * @param goals_json  JSON with {"input": string, "goals": [goal strings]}.
+   * @param timeout     Maximum time to wait for the service (default: 5 s).
+   * @return Service response, usually "OK", or empty string on failure.
+   */
+  std::string goalsToClips(const std::string &goals_json,
+                           std::chrono::seconds timeout = 5s);
+
+  /**
    * Extract a sustantive from a desired category.
    * @param sentence  Natural language sentence.
    * @param category  The category of the object which is meant to be saved.
@@ -104,6 +114,13 @@ public:
   std::string parseSemanticCommand(const std::string &input,
                                    std::chrono::seconds timeout = 10s);
 
+  /**
+   * Ask the Qwen GPSR service to listen to one command and return a goals JSON.
+   * @param timeout  Maximum time to wait for listener + Qwen (default: 45 s).
+   * @return JSON with {"input": string, "goals": [...]}, or an aborted JSON.
+   */
+  std::string listenGpsrCommand(std::chrono::seconds timeout = 45s);
+
 private:
   // ── ROS2 infrastructure ───────────────────────────────────────────────────
   rclcpp::Node::SharedPtr node_;
@@ -111,6 +128,7 @@ private:
 
   rclcpp::Client<clips_interfaces::srv::String>::SharedPtr interpret_client_;
   rclcpp::Client<clips_interfaces::srv::String>::SharedPtr primitive_client_;
+  rclcpp::Client<clips_interfaces::srv::String>::SharedPtr goals_client_;
   rclcpp::Client<semantic_parser_interfaces::srv::ExtractEntity>::SharedPtr
       entity_client_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr request_instruction_client_;
@@ -118,6 +136,8 @@ private:
       clips_start_planning_client_;
   rclcpp::Client<semantic_parser_interfaces::srv::Parser>::SharedPtr
       semantic_parser_client_;
+  rclcpp::Client<semantic_parser_interfaces::srv::Parser>::SharedPtr
+      gpsr_listen_client_;
 
   // ── Template Method: invariant call flow ──────────────────────────────────
 

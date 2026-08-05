@@ -1,6 +1,17 @@
 <launch>
     <!-- 1. Declarar el argumento que esperamos recibir -->
     <arg name="plan_name" default="default_plan"/>
+    <arg name="qwen_url" default=""/>
+    <arg name="qwen_api_key" default=""/>
+    <arg name="qwen_timeout_sec" default="5.0"/>
+    <arg name="qwen_response_format" default="goals"/>
+    <arg name="use_entity_extractor" default="true"/>
+    <arg name="use_goals_to_clips" default="true"/>
+    <arg name="clips_output" default="log"/>
+    <arg name="gpsr_listen_service_name" default="listen_gpsr"/>
+    <arg name="gpsr_listener_service" default="/hri/listener/listen"/>
+    <arg name="gpsr_listener_grammar" default=""/>
+    <arg name="gpsr_listen_timeout_sec" default="30.0"/>
     
     <group>
         <push_ros_namespace namespace="planning"/>
@@ -9,10 +20,22 @@
         <include file="$(find-pkg-share clips_launch)/launch/clips.launch.xml">
             <!-- Esta es la línea clave: propaga el argumento hacia abajo -->
             <arg name="plan_name" value="$(var plan_name)"/>
+            <arg name="use_goals_to_clips" value="$(var use_goals_to_clips)"/>
+            <arg name="clips_output" value="$(var clips_output)"/>
         </include>
 
         <!-- Semantic parser -->
-        <include file="$(find-pkg-share semantic_parser)/launch/semantic_parser.launch.xml"/>
+        <include file="$(find-pkg-share semantic_parser)/launch/semantic_parser.launch.xml">
+            <arg name="qwen_url" value="$(var qwen_url)"/>
+            <arg name="qwen_api_key" value="$(var qwen_api_key)"/>
+            <arg name="qwen_timeout_sec" value="$(var qwen_timeout_sec)"/>
+            <arg name="qwen_response_format" value="$(var qwen_response_format)"/>
+            <arg name="use_entity_extractor" value="$(var use_entity_extractor)"/>
+            <arg name="gpsr_listen_service_name" value="$(var gpsr_listen_service_name)"/>
+            <arg name="gpsr_listener_service" value="$(var gpsr_listener_service)"/>
+            <arg name="gpsr_listener_grammar" value="$(var gpsr_listener_grammar)"/>
+            <arg name="gpsr_listen_timeout_sec" value="$(var gpsr_listen_timeout_sec)"/>
+        </include>
 
     </group>
 </launch>

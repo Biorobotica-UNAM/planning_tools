@@ -39,6 +39,9 @@ Planning::Planning(const rclcpp::Node::SharedPtr &node) : node_(node) {
   primitive_client_ = node_->create_client<clips_interfaces::srv::String>(
       "/planning/primitive_to_clips/convert", qos, cb_group_clients_);
 
+  goals_client_ = node_->create_client<clips_interfaces::srv::String>(
+      "/planning/goals_to_clips/convert", qos, cb_group_clients_);
+
   entity_client_ =
       node->create_client<semantic_parser_interfaces::srv::ExtractEntity>(
           "/planning/semantic_parser/extract_entity", qos, cb_group_clients_);
@@ -52,6 +55,9 @@ Planning::Planning(const rclcpp::Node::SharedPtr &node) : node_(node) {
   semantic_parser_client_ =
       node_->create_client<semantic_parser_interfaces::srv::Parser>(
           "/planning/semantic_parser/semantic_parser", qos, cb_group_clients_);
+  gpsr_listen_client_ =
+      node_->create_client<semantic_parser_interfaces::srv::Parser>(
+          "/planning/semantic_parser/listen_gpsr", qos, cb_group_clients_);
 }
 
 // ============================================================
@@ -88,6 +94,25 @@ std::string Planning::primitiveToClips(const std::string &sentence,
       primitive_client_, request,
       [&](auto response) { result = response->data; }, timeout,
       "PrimitiveToClips");
+
+  return result;
+}
+
+// ============================================================
+// goalsToClips
+// ============================================================
+
+std::string Planning::goalsToClips(const std::string &goals_json,
+                                   std::chrono::seconds timeout) {
+  auto request = std::make_shared<clips_interfaces::srv::String::Request>();
+  request->data = goals_json;
+
+  std::string result;
+
+  call_service<clips_interfaces::srv::String>(
+      goals_client_, request,
+      [&](auto response) { result = response->data; }, timeout,
+      "GoalsToClips");
 
   return result;
 }
@@ -213,6 +238,35 @@ std::string Planning::parseSemanticCommand(const std::string &input,
     RCLCPP_WARN(node_->get_logger(), "SemanticParser returned empty response.");
   } else {
     RCLCPP_INFO(node_->get_logger(), "Semantic CD: %s", result.c_str());
+  }
+
+  return result;
+}
+
+// ============================================================
+// listenGpsrCommand
+// ============================================================
+
+std::string Planning::listenGpsrCommand(std::chrono::seconds timeout) {
+  auto request =
+      std::make_shared<semantic_parser_interfaces::srv::Parser::Request>();
+  request->command = "";
+
+  std::string result;
+
+  bool completed = call_service<semantic_parser_interfaces::srv::Parser>(
+      gpsr_listen_client_, request,
+      [&](auto response) { result = response->response; }, timeout,
+      "GpsrListen");
+
+  if (!completed) {
+    return "";
+  }
+
+  if (result.empty()) {
+    RCLCPP_WARN(node_->get_logger(), "GpsrListen returned empty response.");
+  } else {
+    RCLCPP_INFO(node_->get_logger(), "GpsrListen response: %s", result.c_str());
   }
 
   return result;
