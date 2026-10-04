@@ -251,9 +251,6 @@ Configurar `QWEN_SERVER_URL` y, si el servidor requiere autenticación,
 En una terminal con los paquetes compilados y sus requisitos resueltos:
 
 ```bash
-cd /home/sergio/ros2_clips
-source /opt/ros/jazzy/setup.bash
-source install/setup.bash
 ros2 launch planning_tools planning.launch.xml plan_name:=goals
 ```
 
@@ -289,9 +286,6 @@ Cargar el mismo entorno ROS y ejecutar el script con el comando entre comillas
 para que se reciba como un único argumento:
 
 ```bash
-cd /home/sergio/ros2_clips
-source /opt/ros/jazzy/setup.bash
-source install/setup.bash
 python3 planning_tools/scripts/qwen_to_plan.py \
   "Go to the living room, find the waving person, and guide them to the inspection point"
 ```
