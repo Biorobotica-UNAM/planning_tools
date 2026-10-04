@@ -33,12 +33,6 @@ Planning::Planning(const rclcpp::Node::SharedPtr &node) : node_(node) {
   // const rclcpp::QoS qos = rclcpp::ServicesQoS();
   const rmw_qos_profile_t qos = rmw_qos_profile_services_default;
 
-  interpret_client_ = node_->create_client<clips_interfaces::srv::String>(
-      "/hri/listener/natural_to_clips/interpret", qos, cb_group_clients_);
-
-  primitive_client_ = node_->create_client<clips_interfaces::srv::String>(
-      "/planning/primitive_to_clips/convert", qos, cb_group_clients_);
-
   goals_client_ = node_->create_client<clips_interfaces::srv::String>(
       "/planning/goals_to_clips/convert", qos, cb_group_clients_);
 
@@ -58,44 +52,6 @@ Planning::Planning(const rclcpp::Node::SharedPtr &node) : node_(node) {
   gpsr_listen_client_ =
       node_->create_client<semantic_parser_interfaces::srv::Parser>(
           "/planning/semantic_parser/listen_gpsr", qos, cb_group_clients_);
-}
-
-// ============================================================
-// interpretToClips
-// ============================================================
-
-std::string Planning::interpretToClips(const std::string &sentence,
-                                       std::chrono::seconds timeout) {
-  auto request = std::make_shared<clips_interfaces::srv::String::Request>();
-  request->data = sentence;
-
-  std::string result;
-
-  call_service<clips_interfaces::srv::String>(
-      interpret_client_, request,
-      [&](auto response) { result = response->data; }, timeout,
-      "InterpretToClips");
-
-  return result;
-}
-
-// ============================================================
-// primitiveToClips
-// ============================================================
-
-std::string Planning::primitiveToClips(const std::string &sentence,
-                                       std::chrono::seconds timeout) {
-  auto request = std::make_shared<clips_interfaces::srv::String::Request>();
-  request->data = sentence;
-
-  std::string result;
-
-  call_service<clips_interfaces::srv::String>(
-      primitive_client_, request,
-      [&](auto response) { result = response->data; }, timeout,
-      "PrimitiveToClips");
-
-  return result;
 }
 
 // ============================================================

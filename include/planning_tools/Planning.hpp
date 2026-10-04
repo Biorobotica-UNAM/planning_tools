@@ -49,24 +49,6 @@ public:
   explicit Planning(const rclcpp::Node::SharedPtr &node);
 
   /**
-   * Translate a natural-language sentence into a CLIPS fact string.
-   * @param sentence  Raw natural-language input.
-   * @param timeout   Maximum time to wait for the service (default: 5 s).
-   * @return CLIPS fact string, or empty string on failure.
-   */
-  std::string interpretToClips(const std::string &sentence,
-                               std::chrono::seconds timeout = 5s);
-
-  /**
-   * Convert a primitive action sentence to a CLIPS representation.
-   * @param sentence  Primitive action string.
-   * @param timeout   Maximum time to wait for the service (default: 5 s).
-   * @return CLIPS representation string, or empty string on failure.
-   */
-  std::string primitiveToClips(const std::string &sentence,
-                               std::chrono::seconds timeout = 5s);
-
-  /**
    * Convert a Qwen goals JSON payload through goals_to_clips.
    * The service asserts the generated facts and starts planning.
    * @param goals_json  JSON with {"input": string, "goals": [goal strings]}.
@@ -126,8 +108,6 @@ private:
   rclcpp::Node::SharedPtr node_;
   rclcpp::CallbackGroup::SharedPtr cb_group_clients_;
 
-  rclcpp::Client<clips_interfaces::srv::String>::SharedPtr interpret_client_;
-  rclcpp::Client<clips_interfaces::srv::String>::SharedPtr primitive_client_;
   rclcpp::Client<clips_interfaces::srv::String>::SharedPtr goals_client_;
   rclcpp::Client<semantic_parser_interfaces::srv::ExtractEntity>::SharedPtr
       entity_client_;
